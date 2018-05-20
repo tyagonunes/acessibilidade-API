@@ -3,9 +3,9 @@ var Usuario = require('../models/usuario');
 exports.save = function (nome, senha, callback) {
     Usuario.findOne({'nome':nome}, function(erro, usuario){
         if(erro) {
-            callback('Deu erro');
+            callback({success: false, data:[], message:'Erro do servidor'});
         }else if (usuario){
-            callback('Usuario já existe');
+            callback({success: false, data:[], message:'Usuário já existente'});
         }else {
             var novoUsuario = new Usuario;
             novoUsuario.nome = nome;
@@ -14,9 +14,9 @@ exports.save = function (nome, senha, callback) {
             novoUsuario.criacao = new Date();
             novoUsuario.save(function(erro, usuario){
                 if(erro) {
-                    callback('Erro');
+                    callback({success: false, data:[], message:'Erro ao salvar usuário'});
                 }else {
-                    callback(usuario);
+                    callback({success: true, data:[], message:'Usuário cadastrado'});
                 }
             })
         }
@@ -27,16 +27,16 @@ exports.login = function(nome, senha, callback) {
     
     Usuario.findOne({'nome':nome}, function(erro, usuario) {
         if(erro) {
-            callback('Deu erro')
+            callback({success: false, data:[], message:'Erro do servidor'})
         }else if (usuario) {
             if(usuario.validarSenha(senha)) {
-                resp = {success: true, data:usuario.token, message:'Usuário encontrado'};
+                resp = {success: true, data:[usuario.token], message:'Usuário encontrado'};
                 callback(resp);    
             }else {
-                callback('Senha incorreta')
+                callback({success: false, data:[], message:'Senha incorreta'})
             }
         }else{
-            callback('Usuário inexistente')
+            callback({success: false, data:[], message:'Usuário não encontrado'})
         }
     });
 }
@@ -49,7 +49,7 @@ exports.list = function(token, callback) {
         }else if (usuario) {
             callback({'nome':usuario.nome});
         }else {
-            callback('Usuário não encontrado');
+            callback({success: false, data:[], message:'Usuário não encontrado'});
         }
     });
 }
@@ -58,7 +58,7 @@ exports.list = function(token, callback) {
 exports.listAll = function (callback) {
 	Usuario.find({}, function(error, usuarios){
 		if(error) {
-			callback({success: false, data:[] ,message: 'Não foi possivel salvar usuário'});
+			callback({success: false, data:[] ,message: 'Não foi possivel listar usuários'});
 		}
 		else {
 			resp = {success: true, data:usuarios, message:'Lista de usuarios'};
@@ -71,11 +71,11 @@ exports.deleteUser = function (id, callback) {
     Usuario.findById(id, function(error, usuario){
         if(error) {
             //resp1 = {success: false, data:{}, message:'Não foi possivel excluir usuário'};
-			callback({error:'Não foi possivel excluir usuário'});
+			callback({success: false, data:[], message:'Não foi possivel excluir usuário'});
 		}else {
             usuario.remove(function(error){
 				if (!error) {
-					callback({success: true, data:{}, message:'Usuário excluido com sucesso'});
+					callback({success: true, data:[], message:'Usuário excluido com sucesso'});
 				}
 			});
         }
